@@ -1,4 +1,4 @@
-from os import error
+from os import error, name
 from django.contrib.auth import login
 from django.http import response
 from django.http import HttpResponse
@@ -362,20 +362,80 @@ def generateMusterView(request):
 
 # exporting attendance data to muster
 def generateMuster(request):
-    response = HttpResponse(content_type = 'application/ms-excel')
-    response['content-Disposition'] = 'attachment; filename=Attendance'+\
-        str(datetime.now())+'.xls'
-    # wb = xlwt.Workbook(encoding='utf-8')
-    # ws = wb.add_sheet("Attendance")
-    
-    style = xlwt.XFStyle()
-    style.font.bold = True
-    style.alignment.wrap = 1 # Set wrap
-    workbook = xlwt.Workbook(encoding='utf-8')
-    worksheet = workbook.add_sheet('My Worksheet')
-    worksheet.write_merge(0, 0, 0, 20, 'DHARMSINH DESAI UNIVERSITY, NADIAD', xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True, height 420;'))
-    worksheet.write_merge(1, 1, 0, 20, 'Attendance report for CE SEM4 DAA', xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True, height 320;'))
-    worksheet.write_merge(2, 2, 0, 20, 'From Date:'+str(date.today())+'                       To Date:'+str(date.today())+'', xlwt.easyxf('align: horz center, vert center;font: colour red, bold True, height 220;'))
+    if request.method == "POST":
+        response = HttpResponse(content_type = 'application/ms-excel')
+        response['content-Disposition'] = 'attachment; filename=Attendance'+\
+            str(datetime.now())+'.xls'
+
+        branch = request.POST['branch']
+        sem = request.POST['sem']
+        subject = request.POST['subject']
+        startDate = request.POST['start_date']
+        endDate = request.POST['end_date']
+        tblname = branch+"_"+sem+"_"+subject
+
+        cursor = connection.cursor()
+        # first getting all tablename and checking if there is attendance data or not
+        cursor.execute("SELECT tableName FROM attendance_start_stop")
+        flag = 0
+        for temp in cursor.fetchall():
+            if temp[0].lower() == tblname.lower():
+                flag = 1
+        if flag == 1:
+            # adding heading to excel file
+            style = xlwt.XFStyle()
+            style.font.bold = True
+            style.alignment.wrap = 1 # Set wrap
+            workbook = xlwt.Workbook(encoding='utf-8')
+            worksheet = workbook.add_sheet('My Worksheet')
+            worksheet.write_merge(0, 0, 0, 20, 'DHARMSINH DESAI UNIVERSITY, NADIAD', xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True, height 420;'))
+            worksheet.write_merge(1, 1, 0, 20, 'Attendance report for '+branch+' '+sem+' '+subject+' ', xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True, height 320;'))
+            worksheet.write_merge(2, 2, 0, 20, 'From Date:'+startDate+'                       To Date:'+endDate+'', xlwt.easyxf('align: horz center, vert center;font: colour red, bold True, height 220;'))
+            first_col = worksheet.col(1)
+            first_col.width = 420*20
+            worksheet.write(3, 0, "Roll NO.", xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True;'))
+            worksheet.write(3, 1, "Sutudent name", xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True;'))
+
+            # setting roll no and name of student in excel
+            row = 4
+            cursor.execute("SELECT name,roll_no FROM "+tblname+" WHERE date BETWEEN '"+startDate+"' AND '"+endDate+"' GROUP BY roll_no ORDER BY roll_no")
+            for temp in cursor.fetchall():
+                worksheet.write(row, 0, temp[1])
+                worksheet.write(row, 1, temp[0])
+                row += 1
+            # settind date row
+            cursor.execute("SELECT date FROM "+tblname+" WHERE date BETWEEN '"+startDate+"' AND '"+endDate+"' GROUP BY date")
+            col = 2
+            for temp in cursor.fetchall():
+                temp_col = worksheet.col(col)
+                temp_col.width = 120 * 25
+                worksheet.write(3, col, str(temp[0]))
+                col += 1
+            # getting data from database between start and end date
+            cursor.execute("SELECT * FROM "+tblname+" WHERE date BETWEEN '"+startDate+"' AND '"+endDate+"' ORDER BY roll_no")
+            row = 3
+            col = 2
+            prev_roll_no = ''
+            for temp in cursor.fetchall():
+                initial_roll_no = str(temp[2])
+                if initial_roll_no == prev_roll_no:
+                    col += 1
+                else:
+                    prev_roll_no = initial_roll_no
+                    row += 1
+                    col = 2
+                if temp[3] == 1:
+                    worksheet.write(row, col, "P")
+                else:
+                    worksheet.write(row, col, "A")
+            workbook.save(response)
+            return response
+        else:
+            error = []
+            error.append("OPPS!! no data found")
+            return render(request,"attendance/generate_muster.html",{'error':error}) 
+    else:
+        return render(request,"attendance/generate_muster.html")
     # Changing the row height or the column width is xlwt rows and columns are counted from 0
     # first_col = worksheet.col(9)
     # two_col = worksheet.col(1)
@@ -394,5 +454,4 @@ def generateMuster(request):
     #         worksheet.write(index, i, value, style)
 
     
-    workbook.save(response)
-    return response
+    
