@@ -1,13 +1,16 @@
 from os import error
 from django.contrib.auth import login
+from django.http import response
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from xlwt.Formatting import Font
 from .models import Student,Teacher
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
-import django.utils.timezone as timezone
 from django.contrib.auth.decorators import login_required
 from datetime import date,datetime
+import xlwt
 
 # home page
 def home(request):
@@ -352,3 +355,44 @@ def getAttendance(request,username):
             })
     else:
         return render(request,"attendance/view_attendance.html")
+
+# rendering generate muster view
+def generateMusterView(request):
+    return render(request,"attendance/generate_muster.html")
+
+# exporting attendance data to muster
+def generateMuster(request):
+    response = HttpResponse(content_type = 'application/ms-excel')
+    response['content-Disposition'] = 'attachment; filename=Attendance'+\
+        str(datetime.now())+'.xls'
+    # wb = xlwt.Workbook(encoding='utf-8')
+    # ws = wb.add_sheet("Attendance")
+    
+    style = xlwt.XFStyle()
+    style.font.bold = True
+    style.alignment.wrap = 1 # Set wrap
+    workbook = xlwt.Workbook(encoding='utf-8')
+    worksheet = workbook.add_sheet('My Worksheet')
+    worksheet.write_merge(0, 0, 0, 20, 'DHARMSINH DESAI UNIVERSITY, NADIAD', xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True, height 420;'))
+    worksheet.write_merge(1, 1, 0, 20, 'Attendance report for CE SEM4 DAA', xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True, height 320;'))
+    worksheet.write_merge(2, 2, 0, 20, 'From Date:'+str(date.today())+'                       To Date:'+str(date.today())+'', xlwt.easyxf('align: horz center, vert center;font: colour red, bold True, height 220;'))
+    # Changing the row height or the column width is xlwt rows and columns are counted from 0
+    # first_col = worksheet.col(9)
+    # two_col = worksheet.col(1)
+    # three_col = worksheet.col(2)
+    # # sec_col = worksheet.col(0)
+    # first_col.width = 320*20
+    # two_col.width = 320*20
+    # three_col.width = 320*20
+    # # Save excel
+    # head = ['username', 'email', 'job_title', 'phone', 'company_name', 'status', 'country', 'city', 'Registration_time', 'profile', 'logo_address']
+    # for index, value in enumerate(head):
+    #     worksheet.write(0, index, value, style)
+    # content = [[u'1231', u'123@123.com', u'12312', u'1321', u'ACE-Speed International Logistics Co., Ltd.', '\xe5\xae\xa1\xe6\xa0\xb8\xe9\x80\x9a\xe8\xbf\x87', u'China', u'Beijing', '2019-05-30 19:09:48', u'123', None], [u'1321', u'xweaweqw@124.com', u'31231', u'3123123', u'ACE-Speed International Logistics Co., Ltd.', '\xe5\xae\xa1\xe6\xa0\xb8\xe9\x80\x9a\xe8\xbf\x87', u'China', u'Beijing', '2019-10-14 15:27:03', u'123', None], [u'lileieli', u'a17634810426@126.com', u'lielilei', u'784957430', u'Beijing Elan-Jet International Logistics Co., Ltd.', '\xe5\xae\xa1\xe6\xa0\xb8\xe9\x80\x9a\xe8\xbf\x87', u'China', u'Beijing', '1970-01-01 08:33:39', u'Beijing Elan-Jet International Logistics Co., Ltd. was incorporated in 1994.  It is one of the first privately owned freight forwarding enterprises in China.     Targeting "to be the most competitive logistics service provider," Elan-jet is committed to providing professional air and ocean logistics and distribution services, including international freight forwarding, customs brokerage, and related services.    Honesty, strictness, high efficiency, and initiative are our attitude. Benefiting each other and developing together are our principles. Beijing Elan-Jet International Logistics Co., Ltd. is your best choice for helping your company to achieve success.', None]]
+    # for index, value_list in enumerate(content,2):
+    #     for i, value in enumerate(value_list):
+    #         worksheet.write(index, i, value, style)
+
+    
+    workbook.save(response)
+    return response

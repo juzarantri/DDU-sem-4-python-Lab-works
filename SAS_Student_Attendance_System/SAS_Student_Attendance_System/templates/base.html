@@ -38,6 +38,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'start_stop' %}">Start/Stop Attendance</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'generate_muster_view' %}">Generate muster</a>
+                </li>
                 {% else %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'make_attendance' %}">Make Attendance</a>
