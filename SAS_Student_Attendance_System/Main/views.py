@@ -28,6 +28,7 @@ def registration_view(request):
                 parent_phone_no = request.POST['parent_phone_no']
                 student_id = request.POST['student_id']
                 roll_no = request.POST['roll_no']
+                branch = request.POST['branch']
                 email = request.POST['email']
                 error = []
                 cursor = connection.cursor()
@@ -51,7 +52,7 @@ def registration_view(request):
                     if temp[6] == student_id:
                         error.append("Student id must be unique")
                         break
-                    if temp[7] == roll_no:
+                    if temp[7] == roll_no and temp[5] == branch:
                         error.append("Roll NO. must be unique")
                         break
                 if error:   
@@ -376,7 +377,7 @@ def generateMuster(request):
 
         cursor = connection.cursor()
         # first getting all tablename and checking if there is attendance data or not
-        cursor.execute("SELECT tableName FROM attendance_start_stop")
+        cursor.execute("SELECT tableName FROM attendance_start_stop WHERE faculty = '"+request.user.username+"'")
         flag = 0
         for temp in cursor.fetchall():
             if temp[0].lower() == tblname.lower():
@@ -397,23 +398,41 @@ def generateMuster(request):
             worksheet.write(3, 1, "Sutudent name", xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True;'))
 
             # setting roll no and name of student in excel
-            row = 4
+            row = 5
             cursor.execute("SELECT name,roll_no FROM "+tblname+" WHERE date BETWEEN '"+startDate+"' AND '"+endDate+"' GROUP BY roll_no ORDER BY roll_no")
             for temp in cursor.fetchall():
                 worksheet.write(row, 0, temp[1])
                 worksheet.write(row, 1, temp[0])
                 row += 1
-            # settind date row
+            # setting date row
             cursor.execute("SELECT date FROM "+tblname+" WHERE date BETWEEN '"+startDate+"' AND '"+endDate+"' GROUP BY date")
             col = 2
+            month_col = 2
+            months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+            initial_month = -1
+            prev_month = -1
+            last_month = -1
+            count = 2
             for temp in cursor.fetchall():
+                initial_month = int(str(temp[0])[5:7]) - 1
+                last_month = initial_month
+                if initial_month == prev_month:
+                    pass
+                else:
+                    if count > month_col:
+                        worksheet.write_merge(3,3,month_col,count - 1,months[prev_month],xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True;'))
+                        month_col = count
+                    prev_month = initial_month
                 temp_col = worksheet.col(col)
-                temp_col.width = 120 * 25
-                worksheet.write(3, col, str(temp[0]))
+                temp_col.width = 25 * 25
+                worksheet.write(4, col, str(temp[0])[8:10])
+                count += 1
                 col += 1
+            if last_month != -1:
+                worksheet.write_merge(3,3,month_col,count - 1,months[last_month],xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True;'))
             # getting data from database between start and end date
-            cursor.execute("SELECT * FROM "+tblname+" WHERE date BETWEEN '"+startDate+"' AND '"+endDate+"' ORDER BY roll_no")
-            row = 3
+            cursor.execute("SELECT * FROM "+tblname+" WHERE date BETWEEN '"+startDate+"' AND '"+endDate+"' ORDER BY roll_no, date")
+            row = 4
             col = 2
             prev_roll_no = ''
             for temp in cursor.fetchall():
@@ -425,9 +444,9 @@ def generateMuster(request):
                     row += 1
                     col = 2
                 if temp[3] == 1:
-                    worksheet.write(row, col, "P")
+                    worksheet.write(row, col, "P",xlwt.easyxf('font: colour green;'))
                 else:
-                    worksheet.write(row, col, "A")
+                    worksheet.write(row, col, "A",xlwt.easyxf('font: colour red;'))
             workbook.save(response)
             return response
         else:
@@ -436,22 +455,6 @@ def generateMuster(request):
             return render(request,"attendance/generate_muster.html",{'error':error}) 
     else:
         return render(request,"attendance/generate_muster.html")
-    # Changing the row height or the column width is xlwt rows and columns are counted from 0
-    # first_col = worksheet.col(9)
-    # two_col = worksheet.col(1)
-    # three_col = worksheet.col(2)
-    # # sec_col = worksheet.col(0)
-    # first_col.width = 320*20
-    # two_col.width = 320*20
-    # three_col.width = 320*20
-    # # Save excel
-    # head = ['username', 'email', 'job_title', 'phone', 'company_name', 'status', 'country', 'city', 'Registration_time', 'profile', 'logo_address']
-    # for index, value in enumerate(head):
-    #     worksheet.write(0, index, value, style)
-    # content = [[u'1231', u'123@123.com', u'12312', u'1321', u'ACE-Speed International Logistics Co., Ltd.', '\xe5\xae\xa1\xe6\xa0\xb8\xe9\x80\x9a\xe8\xbf\x87', u'China', u'Beijing', '2019-05-30 19:09:48', u'123', None], [u'1321', u'xweaweqw@124.com', u'31231', u'3123123', u'ACE-Speed International Logistics Co., Ltd.', '\xe5\xae\xa1\xe6\xa0\xb8\xe9\x80\x9a\xe8\xbf\x87', u'China', u'Beijing', '2019-10-14 15:27:03', u'123', None], [u'lileieli', u'a17634810426@126.com', u'lielilei', u'784957430', u'Beijing Elan-Jet International Logistics Co., Ltd.', '\xe5\xae\xa1\xe6\xa0\xb8\xe9\x80\x9a\xe8\xbf\x87', u'China', u'Beijing', '1970-01-01 08:33:39', u'Beijing Elan-Jet International Logistics Co., Ltd. was incorporated in 1994.  It is one of the first privately owned freight forwarding enterprises in China.     Targeting "to be the most competitive logistics service provider," Elan-jet is committed to providing professional air and ocean logistics and distribution services, including international freight forwarding, customs brokerage, and related services.    Honesty, strictness, high efficiency, and initiative are our attitude. Benefiting each other and developing together are our principles. Beijing Elan-Jet International Logistics Co., Ltd. is your best choice for helping your company to achieve success.', None]]
-    # for index, value_list in enumerate(content,2):
-    #     for i, value in enumerate(value_list):
-    #         worksheet.write(index, i, value, style)
 
     
     
