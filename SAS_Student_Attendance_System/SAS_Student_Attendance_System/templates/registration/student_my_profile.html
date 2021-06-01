@@ -10,15 +10,16 @@
                         <p align = "center" style="color: red; margin: 0;">{{ err }}</p>
                     {% endfor %}
                 {% endif %}
-                <form action= "{% url 'signup' %}" method="post">{% csrf_token %}
+                <form action= "" method="post">{% csrf_token %}
                     <div class="form-group row">
                         <div align = "center" class="col-sm-6">
                             <div align = "left">
                                 <label for="tag1" class=" col-form-label">Username:</label>
-                                <input id="tag1" type="text" class="form-control" name="uname" placeholder="i.e. lucifer" >
+                                <input id="tag1" type="text" class="form-control" value="{{ username }}" name="uname" placeholder="i.e. lucifer" >
+                                <input type="hidden" value="{{ username }}" name="hidden_uname">
                             </div>
                             <div align = "right">
-                                <a href="#">
+                                <a onclick="disable('tag1')">
                                     <i class="fa fa-edit"></i>
                                 </a>
                             </div>
@@ -26,10 +27,11 @@
                         <div align = "center" class="col-sm-6">
                             <div align = "left">
                                 <label for="tag2" class="col-form-label">Fullname:</label>
-                                <input id="tag2" type="text" class="form-control" name="fullname" placeholder="fullname">
+                                <input id="tag2" type="text" class="form-control" value="{{ fullname }}" name="fullname" placeholder="fullname">
+                                <input type="hidden" value="{{ fullname }}" name="hidden_fullname">
                             </div>
                             <div align = "right">
-                                <a href="#">
+                                <a onclick="disable('tag2')">
                                     <i class="fa fa-edit"></i>
                                 </a>
                             </div>
@@ -38,10 +40,11 @@
                     <div class="form-group row">
                         <label for="tag3" class="col-sm-5 col-form-label">Email:</label>
                         <div class="col-sm-15">
-                             <input id="tag3" type="text" class="form-control" name="email" placeholder="abc@xyz.com">
+                             <input id="tag3" type="text" class="form-control" value="{{ email }}" name="email" placeholder="abc@xyz.com">
+                             <input type="hidden" value="{{ email }}" name="hidden_email">
                         </div>
                         <div align = "right">
-                            <a href="#">
+                            <a onclick="disable('tag3')">
                                 <i class="fa fa-edit"></i>
                             </a>
                         </div>      
@@ -50,10 +53,11 @@
                         <div align = "center" class="col-sm-6">
                             <div align = "left">
                                 <label for="tag4" class="col-form-label">Phone:</label>
-                                <input id="tag4" type="number" class="form-control" minlength="10" maxlength="13" name="phone_no" placeholder="i.e. +17896644133">
+                                <input id="tag4" type="number" value="{{ phone_no }}" class="form-control" minlength="10" maxlength="13" name="phone_no" placeholder="i.e. +17896644133">
+                                <input type="hidden" value="{{ phone_no }}" name="hidden_phone_no" >
                             </div>
                             <div align = "right">
-                                <a href="#">
+                                <a onclick="disable('tag4')">
                                     <i class="fa fa-edit"></i>
                                 </a>
                             </div>
@@ -61,10 +65,11 @@
                         <div align = "center" class="col-sm-6">
                             <div align = "left">
                                 <label for="tag5" class="col-form-label">Parent's Phone:</label>
-                                <input id="tag5" type="number" class="form-control" name="parent_phone_no" placeholder="i.e. +17896644133">
+                                <input id="tag5" type="number" class="form-control" value="{{ parent_phone_no }}" name="parent_phone_no" placeholder="i.e. +17896644133">
+                                <input type="hidden" value="{{ parent_phone_no }}" name="hidden_parent_phone_no" >
                             </div>
                             <div align = "right">
-                                <a href="#">
+                                <a onclick="disable('tag5')">
                                     <i class="fa fa-edit"></i>
                                 </a>
                             </div>
@@ -74,21 +79,23 @@
                         <div align = "center" class="col-sm-3">
                             <div align = "left">
                                 <label for="tag6" class="col-form-label">Branch:</label>
-                                <input id="tag6" type="text" class="form-control" name="branch" minlength="2" maxlength="6" placeholder="i.e. ce">
+                                <input id="tag6" type="text" class="form-control" value="{{ branch }}" name="branch" minlength="2" maxlength="6" placeholder="i.e. ce">
+                                <input type="hidden" value="{{ branch }}" name="hidden_branch" >
                             </div>
                             <div align = "right">
-                                <a href="#">
+                                <a onclick="disable('tag6')">
                                     <i class="fa fa-edit"></i>
                                 </a>
                             </div>
                         </div>
                         <div align = "center" class="col-sm-6">
                             <div align = "left">
-                                <label for="tag6" class="col-form-label">Current Semester:</label>
-                                <input id="tag6" type="number" class="form-control" name="sem" minlength="1" maxlength="1" placeholder="i.e.4">
+                                <label for="tag7" class="col-form-label">Current Semester:</label>
+                                <input id="tag7" type="number" class="form-control" value="{{ semester }}" name="semester" minlength="1" maxlength="1" placeholder="i.e.4">
+                                <input type="hidden" value="{{ semester }}" name="hidden_semester" >
                             </div>
                             <div align = "right">
-                                <a href="#">
+                                <a onclick="disable('tag7')">
                                     <i class="fa fa-edit"></i>
                                 </a>
                             </div>
@@ -96,24 +103,31 @@
                         <div align = "center" class="col-sm-3">
                             <div align = "left">
                                 <label for="tag8" class="col-form-label">Roll NO.:</label>
-                                <input id="tag8" type="text" class="form-control" name="roll_no" minlength="3" maxlength="3" placeholder="200">
+                                <input id="tag8" type="text" class="form-control" value="{{ roll_no }}" name="roll_no" minlength="3" maxlength="3" placeholder="200">
+                                <input type="hidden" value="{{ roll_no }}" name="hidden_roll_no" >
                             </div>
                             <div align = "right">
-                                <a href="#">
+                                <a onclick="disable('tag8')">
                                     <i class="fa fa-edit"></i>
                                 </a>
                             </div>
                         </div>
                     </div>
                     <div class="form-group row">
-                        
                         <div class="col-sm-15">
-                            <label for="tag7" class="col-form-label">Student ID:</label>
-                            <input id="tag7" type="text" class="form-control" name="student_id" placeholder="20ceuod000">
+                            <label for="tag9" class="col-form-label">Student ID:</label>
+                            <input id="tag9" type="text" class="form-control" value="{{ student_id }}" name="student_id" placeholder="20ceuod000">
+                            <input type="hidden" value="{{ student_id }}" name="hidden_student_id" >
+                        </div>
+                        <div align = "right">
+                            <a onclick="disable('tag9')">
+                                <i class="fa fa-edit"></i>
+                            </a>
                         </div>
                     </div>
                     <div align = "center">
-                        <button type="submit" name="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" id = "savebtn" name="submit" class="btn btn-primary" formaction="{% url 'save_student_my_profile' %}">Save</button>
+                        <button type="submit" id = "cancelbtn" name="cancel" class="btn btn-outline-secondary" formaction="{% url 'home' %}">Cancel</button>
                     </div>
                     
                   </form>
@@ -121,4 +135,20 @@
         </div>
     </div>
 </div>
+<script>
+    function disable(temp){
+        document.getElementById(temp).disabled = false
+        document.getElementById("savebtn").hidden = false
+        document.getElementById("cancelbtn").hidden = false
+    }
+    function onLoadDisable(temp){
+        document.getElementById("savebtn").hidden = true
+        document.getElementById("cancelbtn").hidden = true
+        var i;
+        for (i = 1; i < 10; i++){
+            document.getElementById("tag"+i.toString()).disabled = true
+        }
+    }
+    document.addEventListener('DOMContentLoaded',onLoadDisable('savebtn'))
+</script>
 {% endblock %}

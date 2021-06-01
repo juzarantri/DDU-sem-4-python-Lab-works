@@ -4,6 +4,12 @@
         <h2 id="h2">Homepage {{id}}</h2>
         <p class="p">Welcome {%if request.user.is_authenticated %} {{user.username}}, {% else %} Observer, {% endif %} to Student Attendance System</p>
     </div>
+    {% if home_error %}
+        {% for err in home_error %}
+            <p align = "center" style="color: red; margin: 0;">{{ err }}</p>
+        {% endfor %}
+    {% endif %}
+    <h5 align = "center" style="color: rgb(128, 73, 0); margin-top: 5%;">{{home_message}}</h5>
     {% block home_content %}
     {% endblock %}
     {%if request.user.is_authenticated %}

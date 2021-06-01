@@ -20,5 +20,6 @@ urlpatterns = [
     url(r'^get_attendance/(?P<username>\w+)/$',views.getAttendance,name="get_attendance"),
     path('generate_muster_view/',views.generateMusterView,name ="generate_muster_view"),
     path('generate_muster/',views.generateMuster,name ="generate_muster"),
-    path('my_profile/',views.myProfileView,name ="my_profile"),
+    path('student_my_profile/',views.studentMyProfileView,name ="student_my_profile"),
+    path('save_student_my_profile/',views.save_student_profile,name ="save_student_my_profile"),
 ]

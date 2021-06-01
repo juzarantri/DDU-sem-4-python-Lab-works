@@ -150,7 +150,7 @@ def startAttendance(request):
             cursor.execute("CREATE TABLE IF NOT EXISTS attendance_start_stop (branch VARCHAR(50), semester VARCHAR(50), subject VARCHAR(50), status INT, tableName VARCHAR(50), faculty VARCHAR(50), FOREIGN KEY (faculty) REFERENCES main_teacher(username));")
             cursor.execute("SELECT * FROM attendance_start_stop WHERE tableName = '"+tblname+"' AND faculty = '"+teacher+"';")
             if cursor.fetchall():
-                cursor.execute("CREATE TABLE IF NOT EXISTS "+tblname+" (name VARCHAR(50), student_id VARCHAR(50), roll_no VARCHAR(50), present INT, date DATE, time TIME, FOREIGN KEY (student_id) REFERENCES main_student(student_id),FOREIGN KEY (roll_no) REFERENCES main_student(roll_no));")
+                cursor.execute("CREATE TABLE IF NOT EXISTS "+tblname+" (name VARCHAR(50), username VARCHAR(30), roll_no VARCHAR(50), present INT, date DATE, time TIME, FOREIGN KEY (username) REFERENCES main_student(username) ON DELETE CASCADE ON UPDATE CASCADE);")
                 today = date.today()
                 d = today.strftime("%Y-%m-%d")
                 cursor.execute("SELECT * FROM "+tblname+" WHERE date = '"+d+"';")
@@ -161,7 +161,7 @@ def startAttendance(request):
                     data = cursor.fetchall()
                     for d in data:
                         sql = "INSERT INTO "+tblname+" VALUES(%s,%s,%s,%s,%s,%s);"
-                        val = (d[2],d[1],d[7],0,date.today(),datetime.now())
+                        val = (d[1],d[0],d[5],0,date.today(),datetime.now())
                         cursor.execute(sql,val)
                 sql = "UPDATE attendance_start_stop SET status = 1 WHERE tableName = '"+tblname+"';"
                 cursor.execute(sql)
@@ -178,7 +178,7 @@ def startAttendance(request):
                     table = s
                     on_going_attendance.append(table)
             else:
-                cursor.execute("CREATE TABLE IF NOT EXISTS "+tblname+" (name VARCHAR(50), student_id VARCHAR(50), roll_no VARCHAR(50), present INT, date DATE, time TIME);")
+                cursor.execute("CREATE TABLE IF NOT EXISTS "+tblname+" (name VARCHAR(50), username VARCHAR(30), roll_no VARCHAR(50), present INT, date DATE, time TIME, FOREIGN KEY (username) REFERENCES main_student(username) ON DELETE CASCADE ON UPDATE CASCADE);") 
                 today = date.today()
                 d = today.strftime("%Y-%m-%d")
                 cursor.execute("SELECT * FROM "+tblname+" WHERE date = '"+d+"';")
@@ -189,7 +189,7 @@ def startAttendance(request):
                     data = cursor.fetchall()
                     for d in data:
                         sql = "INSERT INTO "+tblname+" VALUES(%s,%s,%s,%s,%s,%s);"
-                        val = (d[2],d[1],d[7],0,date.today(),datetime.now())
+                        val = (d[1],d[0],d[6],0,date.today(),datetime.now())
                         cursor.execute(sql,val)
                 sql = "INSERT INTO attendance_start_stop VALUES(%s,%s,%s,%s,%s,%s);"
                 val = (branch,semester,subject,1,tblname,teacher)
@@ -244,7 +244,7 @@ def stopAttendance(request,table,teacher):
 def refreshAttendanceTable(request,teacher):
     teacher = teacher
     cursor = connection.cursor()
-    cursor.execute("CREATE TABLE IF NOT EXISTS attendance_start_stop (branch VARCHAR(50), semester VARCHAR(50), subject VARCHAR(50), status INT, tableName VARCHAR(50), faculty VARCHAR(50), FOREIGN KEY (faculty) REFERENCES main_teacher(username));")
+    cursor.execute("CREATE TABLE IF NOT EXISTS attendance_start_stop (branch VARCHAR(50), semester VARCHAR(50), subject VARCHAR(50), status INT, tableName VARCHAR(50), faculty VARCHAR(50), FOREIGN KEY (faculty) REFERENCES main_teacher(username) ON UPDATE CASCADE ON DELETE CASCADE);")
     cursor.execute("SELECT tableName FROM attendance_start_stop WHERE faculty = '"+teacher+"' AND status=1 ;")
     tableNames = cursor.fetchall()
     on_going_attendance = []
@@ -280,8 +280,8 @@ def refreshStudentAttendanceTable(request,username):
     cursor.execute("SELECT * FROM main_student WHERE username = '"+username+"';")
     temp = cursor.fetchall()
     for t in temp:
-        branch = t[5]
-        sem = t[10]
+        branch = t[4]
+        sem = t[9]
     cursor.execute("SELECT tableName FROM attendance_start_stop WHERE semester = '"+sem+"' AND branch = '"+branch+"' AND status = '1';")
     tableNames = cursor.fetchall()
     on_going_attendance = []
@@ -310,7 +310,7 @@ def refreshStudentAttendanceTable(request,username):
 @login_required(login_url='')
 def clickedPresent(request,table,student):
     cursor = connection.cursor()
-    cursor.execute("SELECT * FROM "+table+" WHERE student_id = '"+student+"' AND date = '"+str(date.today())+"' AND present = 1;" )
+    cursor.execute("SELECT * FROM "+table+" WHERE username = '"+student+"' AND date = '"+str(date.today())+"' AND present = 1;" )
     if cursor.fetchall():
         error = []
         error.append("You are alerady present")
@@ -318,7 +318,7 @@ def clickedPresent(request,table,student):
     else:
         today = date.today()
         d = today.strftime("%Y-%m-%d")
-        cursor.execute("UPDATE "+table+" SET present = 1, time = '"+str(datetime.now())+"' WHERE student_id = '"+student+"' AND date = '"+d+"';")
+        cursor.execute("UPDATE "+table+" SET present = 1, time = '"+str(datetime.now())+"' WHERE username = '"+student+"' AND date = '"+d+"';")
         return render(request,'attendance/make_attendance.html',{'message':"Your Attendance have been successfull recognized for "+table})
 
 # view attendance
@@ -335,12 +335,12 @@ def getAttendance(request,username):
         temp = cursor.fetchall()
         attendanceData = []
         for t in temp:
-            branch = t[5]
-            sem = t[10]
+            branch = t[4]
+            sem = t[9]
         tblname = branch+"_"+sem+"_"+request.POST['subject']
         cursor.execute("SELECT tableName FROM attendance_start_stop WHERE tableName = '"+tblname+"';")
-        if cursor.fetchall():
-            cursor.execute("SELECT present,date,time FROM "+tblname+" WHERE student_id = '"+username+"';")
+        if cursor.fetchall():   
+            cursor.execute("SELECT present,date,time FROM "+tblname+" WHERE username = '"+username+"';")
             for temp in cursor.fetchall():
                 t = {"present":temp[0],"date":temp[1],"time":temp[2]}
                 attendanceData.append(t) 
@@ -460,6 +460,120 @@ def generateMuster(request):
     else:
         return render(request,"attendance/generate_muster.html")
 
-# Users profile
-def myProfileView(request):
-    return render(request,"registration/my_profile.html")
+# Student profile
+def studentMyProfileView(request):
+    cursor = connection.cursor()
+    cursor.execute("SELECT username,email FROM auth_user WHERE username = '"+request.user.username+"'")
+    for temp in cursor.fetchall():
+        username = temp[0]
+        email = temp[1]
+    cursor.execute("SELECT * FROM main_student WHERE username = '"+request.user.username+"'")
+    for temp in cursor.fetchall():
+        context = {
+            'username' : username,
+            'email' : email,
+            'fullname' : temp[1],
+            'phone_no' : temp[2],
+            'parent_phone_no' : temp[3],
+            'branch' : temp[4],
+            'semester' : temp[9][3:4],
+            'student_id' : temp[5],
+            'roll_no' : temp[6],
+        }
+    return render(request,"registration/student_my_profile.html",context)
+
+# Saving Student profile
+def save_student_profile(request):
+    if request.method == "POST":
+        get_phone_no = request.POST.get("phone_no","")
+        if get_phone_no:
+            phone_no=get_phone_no
+        else:
+            phone_no = request.POST["hidden_phone_no"]
+
+        get_parent_phone_no = request.POST.get("parent_phone_no","")
+        if get_parent_phone_no:
+            parent_phone_no=get_parent_phone_no
+        else:
+            parent_phone_no = request.POST["hidden_parent_phone_no"]
+
+        get_student_id = request.POST.get("student_id","")
+        if get_student_id:
+            student_id=get_student_id
+        else:
+            student_id = request.POST["hidden_student_id"]
+
+        get_roll_no = request.POST.get("roll_no","")
+        if get_roll_no:
+            roll_no=get_roll_no
+        else:
+            roll_no = request.POST["hidden_roll_no"]
+
+        get_branch = request.POST.get("branch","")
+        if get_branch:
+            branch=get_branch
+        else:
+            branch = request.POST["hidden_branch"]
+
+        get_email = request.POST.get("email","")
+        if get_email:
+            email=get_email
+        else:
+            email = request.POST["hidden_email"]
+        
+        get_uname = request.POST.get("uname","")
+        if get_uname:
+            uname=get_uname
+        else:
+            uname = request.POST["hidden_uname"]
+
+        get_fullname = request.POST.get("fullname","")
+        if get_fullname:
+            fullname=get_fullname
+        else:
+            fullname = request.POST["hidden_fullname"]
+        
+        get_semester = request.POST.get("semester","")
+        if get_semester:
+            semester=get_semester
+        else:
+            semester = request.POST["hidden_semester"]
+        error = []
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM auth_user WHERE username <> '"+request.user.username+"'")
+        for temp in cursor.fetchall():
+            if temp[4] == uname:
+                error.append("Username has already been taken")
+            if temp[7] == email:
+                error.append("Email has already been taken")
+        if phone_no == parent_phone_no:
+            error.append("Your's and Parent's phone number cannot be same")
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM main_student WHERE username <> '"+request.user.username+"'")
+        for temp in cursor.fetchall():
+            if temp[3] == phone_no:
+                error.append("Phone number must be unique")
+                break
+            if temp[4] == parent_phone_no:
+                error.append("Phone number must be unique")
+                break
+            if temp[6] == student_id:
+                error.append("Student id must be unique")
+                break
+            if temp[7] == roll_no and temp[5] == branch:
+                error.append("Roll NO. must be unique")
+                break
+        if error:   
+            temp = studentMyProfileView(request)
+            return render(request,"home.html",{
+                'home_error': error  
+            })
+        else:
+            temp_username = request.user.username
+            cursor.execute("UPDATE auth_user SET username = '"+uname+"', email = '"+email+"' WHERE username = '"+temp_username+"'")
+            cursor.execute("UPDATE main_student SET username = '"+uname+"', fullname = '"+fullname+"', phone_no = '"+phone_no+"', parents_phone_no = '"+parent_phone_no+"', branch = '"+branch+"', student_id = '"+student_id+"', roll_no = '"+roll_no+"',semester = 'sem"+str(semester)+"' WHERE username = '"+temp_username+"'")
+            return render(request,"home.html",{
+                'home_message': "Your details have been successfully updated"  
+            })
+    else:
+        return render(request,'registration/student_my_profile.html')

@@ -3,7 +3,7 @@ from django.db import models
 from phonenumber_field.modelfields import PhoneNumberField
 
 class Student(models.Model):
-    username = models.CharField(max_length=30, unique=True)
+    username = models.CharField(max_length=30, unique=True, primary_key=True)
     fullname = models.CharField(max_length=60)
     phone_no = PhoneNumberField()
     parents_phone_no = PhoneNumberField()
