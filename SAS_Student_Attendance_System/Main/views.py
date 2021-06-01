@@ -374,87 +374,92 @@ def generateMuster(request):
         startDate = request.POST['start_date']
         endDate = request.POST['end_date']
         tblname = branch+"_"+sem+"_"+subject
+        if startDate < endDate:
+            cursor = connection.cursor()
+            # first getting all tablename and checking if there is attendance data or not
+            cursor.execute("SELECT tableName FROM attendance_start_stop WHERE faculty = '"+request.user.username+"'")
+            flag = 0
+            for temp in cursor.fetchall():
+                if temp[0].lower() == tblname.lower():
+                    flag = 1
+            if flag == 1:
+                # adding heading to excel file
+                style = xlwt.XFStyle()
+                style.font.bold = True
+                style.alignment.wrap = 1 # Set wrap
+                workbook = xlwt.Workbook(encoding='utf-8')
+                worksheet = workbook.add_sheet('My Worksheet')
+                worksheet.write_merge(0, 0, 0, 20, 'DHARMSINH DESAI UNIVERSITY, NADIAD', xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True, height 420;'))
+                worksheet.write_merge(1, 1, 0, 20, 'Attendance report for '+branch+' '+sem+' '+subject+' ', xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True, height 320;'))
+                worksheet.write_merge(2, 2, 0, 20, 'From Date:'+startDate+'                       To Date:'+endDate+'', xlwt.easyxf('align: horz center, vert center;font: colour red, bold True, height 220;'))
+                first_col = worksheet.col(1)
+                first_col.width = 420*20
+                worksheet.write(3, 0, "Roll NO.", xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True;'))
+                worksheet.write(3, 1, "Sutudent name", xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True;'))
 
-        cursor = connection.cursor()
-        # first getting all tablename and checking if there is attendance data or not
-        cursor.execute("SELECT tableName FROM attendance_start_stop WHERE faculty = '"+request.user.username+"'")
-        flag = 0
-        for temp in cursor.fetchall():
-            if temp[0].lower() == tblname.lower():
-                flag = 1
-        if flag == 1:
-            # adding heading to excel file
-            style = xlwt.XFStyle()
-            style.font.bold = True
-            style.alignment.wrap = 1 # Set wrap
-            workbook = xlwt.Workbook(encoding='utf-8')
-            worksheet = workbook.add_sheet('My Worksheet')
-            worksheet.write_merge(0, 0, 0, 20, 'DHARMSINH DESAI UNIVERSITY, NADIAD', xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True, height 420;'))
-            worksheet.write_merge(1, 1, 0, 20, 'Attendance report for '+branch+' '+sem+' '+subject+' ', xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True, height 320;'))
-            worksheet.write_merge(2, 2, 0, 20, 'From Date:'+startDate+'                       To Date:'+endDate+'', xlwt.easyxf('align: horz center, vert center;font: colour red, bold True, height 220;'))
-            first_col = worksheet.col(1)
-            first_col.width = 420*20
-            worksheet.write(3, 0, "Roll NO.", xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True;'))
-            worksheet.write(3, 1, "Sutudent name", xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True;'))
-
-            # setting roll no and name of student in excel
-            row = 5
-            cursor.execute("SELECT name,roll_no FROM "+tblname+" WHERE date BETWEEN '"+startDate+"' AND '"+endDate+"' GROUP BY roll_no ORDER BY roll_no")
-            for temp in cursor.fetchall():
-                worksheet.write(row, 0, temp[1])
-                worksheet.write(row, 1, temp[0])
-                row += 1
-            # setting date row
-            cursor.execute("SELECT date FROM "+tblname+" WHERE date BETWEEN '"+startDate+"' AND '"+endDate+"' GROUP BY date")
-            col = 2
-            month_col = 2
-            months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-            initial_month = -1
-            prev_month = -1
-            last_month = -1
-            count = 2
-            for temp in cursor.fetchall():
-                initial_month = int(str(temp[0])[5:7]) - 1
-                last_month = initial_month
-                if initial_month == prev_month:
-                    pass
-                else:
-                    if count > month_col:
-                        worksheet.write_merge(3,3,month_col,count - 1,months[prev_month],xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True;'))
-                        month_col = count
-                    prev_month = initial_month
-                temp_col = worksheet.col(col)
-                temp_col.width = 25 * 25
-                worksheet.write(4, col, str(temp[0])[8:10])
-                count += 1
-                col += 1
-            if last_month != -1:
-                worksheet.write_merge(3,3,month_col,count - 1,months[last_month],xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True;'))
-            # getting data from database between start and end date
-            cursor.execute("SELECT * FROM "+tblname+" WHERE date BETWEEN '"+startDate+"' AND '"+endDate+"' ORDER BY roll_no, date")
-            row = 4
-            col = 2
-            prev_roll_no = ''
-            for temp in cursor.fetchall():
-                initial_roll_no = str(temp[2])
-                if initial_roll_no == prev_roll_no:
-                    col += 1
-                else:
-                    prev_roll_no = initial_roll_no
+                # setting roll no and name of student in excel
+                row = 5
+                cursor.execute("SELECT name,roll_no FROM "+tblname+" WHERE date BETWEEN '"+startDate+"' AND '"+endDate+"' GROUP BY roll_no ORDER BY roll_no")
+                for temp in cursor.fetchall():
+                    worksheet.write(row, 0, temp[1])
+                    worksheet.write(row, 1, temp[0])
                     row += 1
-                    col = 2
-                if temp[3] == 1:
-                    worksheet.write(row, col, "P",xlwt.easyxf('font: colour green;'))
-                else:
-                    worksheet.write(row, col, "A",xlwt.easyxf('font: colour red;'))
-            workbook.save(response)
-            return response
+                # setting date row
+                cursor.execute("SELECT date FROM "+tblname+" WHERE date BETWEEN '"+startDate+"' AND '"+endDate+"' GROUP BY date")
+                col = 2
+                month_col = 2
+                months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+                initial_month = -1
+                prev_month = -1
+                last_month = -1
+                count = 2
+                for temp in cursor.fetchall():
+                    initial_month = int(str(temp[0])[5:7]) - 1
+                    last_month = initial_month
+                    if initial_month == prev_month:
+                        pass
+                    else:
+                        if count > month_col:
+                            worksheet.write_merge(3,3,month_col,count - 1,months[prev_month],xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True;'))
+                            month_col = count
+                        prev_month = initial_month
+                    temp_col = worksheet.col(col)
+                    temp_col.width = 25 * 25
+                    worksheet.write(4, col, str(temp[0])[8:10])
+                    count += 1
+                    col += 1
+                if last_month != -1:
+                    worksheet.write_merge(3,3,month_col,count - 1,months[last_month],xlwt.easyxf('align: horz center, vert center;pattern: pattern solid, fore_colour white;font: colour black, bold True;'))
+                # getting data from database between start and end date
+                cursor.execute("SELECT * FROM "+tblname+" WHERE date BETWEEN '"+startDate+"' AND '"+endDate+"' ORDER BY roll_no, date")
+                row = 4
+                col = 2
+                prev_roll_no = ''
+                for temp in cursor.fetchall():
+                    initial_roll_no = str(temp[2])
+                    if initial_roll_no == prev_roll_no:
+                        col += 1
+                    else:
+                        prev_roll_no = initial_roll_no
+                        row += 1
+                        col = 2
+                    if temp[3] == 1:
+                        worksheet.write(row, col, "P",xlwt.easyxf('font: colour green;'))
+                    else:
+                        worksheet.write(row, col, "A",xlwt.easyxf('font: colour red;'))
+                workbook.save(response)
+                return response
+            else:
+                error = []
+                error.append("OPPS!! no data found")
+                return render(request,"attendance/generate_muster.html",{'error':error})
         else:
             error = []
-            error.append("OPPS!! no data found")
-            return render(request,"attendance/generate_muster.html",{'error':error}) 
+            error.append("Start date cannot be greater then End date")
+            return render(request,"attendance/generate_muster.html",{'error':error})
     else:
         return render(request,"attendance/generate_muster.html")
 
-    
-    
+# Users profile
+def myProfileView(request):
+    return render(request,"registration/my_profile.html")

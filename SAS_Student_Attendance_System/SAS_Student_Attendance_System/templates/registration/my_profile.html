@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-6">
+        <div class="card">
+            <div class="card-body">
+                <h2 align = "center">My Profile</h2>
+                {% if error %}
+                    {% for err in error %}
+                        <p align = "center" style="color: red; margin: 0;">{{ err }}</p>
+                    {% endfor %}
+                {% endif %}
+                <form action= "{% url 'signup' %}" method="post">{% csrf_token %}
+                    <div class="form-group row">
+                        <div align = "center" class="col-sm-6">
+                            <div align = "left">
+                                <label for="tag1" class=" col-form-label">Username:</label>
+                                <input id="tag1" type="text" class="form-control" name="uname" placeholder="i.e. lucifer" >
+                            </div>
+                            <div align = "right">
+                                <a href="#">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div align = "center" class="col-sm-6">
+                            <div align = "left">
+                                <label for="tag2" class="col-form-label">Fullname:</label>
+                                <input id="tag2" type="text" class="form-control" name="fullname" placeholder="fullname">
+                            </div>
+                            <div align = "right">
+                                <a href="#">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label for="tag3" class="col-sm-5 col-form-label">Email:</label>
+                        <div class="col-sm-15">
+                             <input id="tag3" type="text" class="form-control" name="email" placeholder="abc@xyz.com">
+                        </div>
+                        <div align = "right">
+                            <a href="#">
+                                <i class="fa fa-edit"></i>
+                            </a>
+                        </div>      
+                    </div>
+                    <div class="form-group row">
+                        <div align = "center" class="col-sm-6">
+                            <div align = "left">
+                                <label for="tag4" class="col-form-label">Phone:</label>
+                                <input id="tag4" type="number" class="form-control" minlength="10" maxlength="13" name="phone_no" placeholder="i.e. +17896644133">
+                            </div>
+                            <div align = "right">
+                                <a href="#">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div align = "center" class="col-sm-6">
+                            <div align = "left">
+                                <label for="tag5" class="col-form-label">Parent's Phone:</label>
+                                <input id="tag5" type="number" class="form-control" name="parent_phone_no" placeholder="i.e. +17896644133">
+                            </div>
+                            <div align = "right">
+                                <a href="#">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>                        
+                    <div class="form-group row">
+                        <div align = "center" class="col-sm-3">
+                            <div align = "left">
+                                <label for="tag6" class="col-form-label">Branch:</label>
+                                <input id="tag6" type="text" class="form-control" name="branch" minlength="2" maxlength="6" placeholder="i.e. ce">
+                            </div>
+                            <div align = "right">
+                                <a href="#">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div align = "center" class="col-sm-6">
+                            <div align = "left">
+                                <label for="tag6" class="col-form-label">Current Semester:</label>
+                                <input id="tag6" type="number" class="form-control" name="sem" minlength="1" maxlength="1" placeholder="i.e.4">
+                            </div>
+                            <div align = "right">
+                                <a href="#">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div align = "center" class="col-sm-3">
+                            <div align = "left">
+                                <label for="tag8" class="col-form-label">Roll NO.:</label>
+                                <input id="tag8" type="text" class="form-control" name="roll_no" minlength="3" maxlength="3" placeholder="200">
+                            </div>
+                            <div align = "right">
+                                <a href="#">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        
+                        <div class="col-sm-15">
+                            <label for="tag7" class="col-form-label">Student ID:</label>
+                            <input id="tag7" type="text" class="form-control" name="student_id" placeholder="20ceuod000">
+                        </div>
+                    </div>
+                    <div align = "center">
+                        <button type="submit" name="submit" class="btn btn-primary">Save</button>
+                    </div>
+                    
+                  </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

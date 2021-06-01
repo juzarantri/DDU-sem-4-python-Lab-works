@@ -1,4 +1,5 @@
 {% extends 'home.html' %}
+{% load static %}
 {% block home_content %}
 <style type="text/css">
     footer {
@@ -14,7 +15,6 @@
         display: none;
     }
 </style>
-<script> changeText() </script>
 <div class="row justify-content-center">
     <div class="col-8">
         <div class="card">
@@ -23,54 +23,56 @@
                 {% if error %}
                     {% for err in error %}
                         <p align = "center" style="color: red; margin: 0;">{{ err }}</p>
+                        <p align = "center" ><a href="{% url 'generate_muster_view' %}">Refresh</a></p>
                     {% endfor %}
-                {% endif %}
-                {% if user.is_staff %}
-                    <form action= "" method="post">{% csrf_token %}
-                        <input type="hidden" name="teacher" value="{{user.username}}">
-                        <div class="form-group row">
-                            <label for="tag1" class="col-sm-5 col-form-label">Branch:</label>
-                            <div class="col-sm-15">
-                                <input id="tag1" type="text" class="form-control" name="branch" placeholder="i.e. CE">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="tag2" class="col-sm-5 col-form-label">Semester:</label>
-                            <select class="col-sm-1 form-select " name="sem" aria-label="Default select example">
-                                <option selected>Select the semester</option>
-                                <option value="Sem1">Sem 1</option>
-                                <option value="Sem2">Sem 2</option>
-                                <option value="Sem3">Sem 3</option>
-                                <option value="Sem4">Sem 4</option>
-                                <option value="Sem5">Sem 5</option>
-                                <option value="Sem6">Sem 6</option>
-                              </select>
-                        </div>
-                        <div class="form-group row">
-                            <label for="tag3" class="col-sm-5 col-form-label">Subject:</label>
-                            <div class="col-sm-15">
-                                <input id="tag3" type="text" class="form-control" name="subject" placeholder="i.e. DAA">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="example-date-input" class="col-2 col-form-label">Start Date:</label>
-                            <div class="col-10">
-                              <input class="form-control" type="date" id="example-date-input"  name="start_date">
-                            </div>
-                          </div>
-                        <div class="form-group row">
-                            <label for="example-date-input" class="col-2 col-form-label">End Date:</label>
-                            <div class="col-10">
-                              <input class="form-control" type="date" id="example-date-input" name="end_date">
-                            </div>
-                        </div>
-                        <div align = "center">
-                            <button type="submit" id="generateBtn" formaction="{% url 'generate_muster' %}" class="btn btn-primary">Generate</button>
-                        </div>
-                        <h5 align = "center" style="color: rgb(128, 73, 0); margin-top: 5%;">{{message}}</h5>
-                    </form>
                 {% else %}
-                    <p  align = "center" style="color: red;">Sorry you don't have access to this!!</p>
+                    {% if user.is_staff %}
+                        <form action= "" method="post">{% csrf_token %}
+                            <input type="hidden" name="teacher" value="{{user.username}}">
+                            <div class="form-group row">
+                                <label for="tag1" class="col-sm-5 col-form-label">Branch:</label>
+                                <div class="col-sm-15">
+                                    <input id="tag1" type="text" class="form-control" name="branch" placeholder="i.e. CE">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tag3" class="col-sm-5 col-form-label">Semester:</label>
+                                <select class="col-10 form-select " name="sem" aria-label="Default select example">
+                                    <option selected>Select the semester</option>
+                                    <option value="Sem1">Sem 1</option>
+                                    <option value="Sem2">Sem 2</option>
+                                    <option value="Sem3">Sem 3</option>
+                                    <option value="Sem4">Sem 4</option>
+                                    <option value="Sem5">Sem 5</option>
+                                    <option value="Sem6">Sem 6</option>
+                                </select>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tag3" class="col-sm-5 col-form-label">Subject:</label>
+                                <div class="col-sm-15">
+                                    <input id="tag3" type="text" class="form-control" name="subject" placeholder="i.e. DAA">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tag3" class="col-sm-5 col-form-label">Start Date:</label>
+                                <div class="col-sm-15">
+                                <input class="form-control" type="date" id="example-date-input"  name="start_date">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="tag3" class="col-sm-5 col-form-label">End Date:</label>
+                                <div class="col-sm-15">
+                                <input class="form-control" type="date" id="example-date-input" name="end_date">
+                                </div>
+                            </div>
+                            <div align = "center">
+                                <button type="submit" id="generateBtn" formaction="{% url 'generate_muster' %}" class="btn btn-primary">Generate</button>
+                            </div>
+                            <h5 align = "center" style="color: rgb(128, 73, 0); margin-top: 5%;">{{message}}</h5>
+                        </form>
+                    {% else %}
+                        <p  align = "center" style="color: red;">Sorry you don't have access to this!!</p>
+                    {% endif %}
                 {% endif %}
             
 {% endblock %}

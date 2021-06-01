@@ -20,4 +20,5 @@ urlpatterns = [
     url(r'^get_attendance/(?P<username>\w+)/$',views.getAttendance,name="get_attendance"),
     path('generate_muster_view/',views.generateMusterView,name ="generate_muster_view"),
     path('generate_muster/',views.generateMuster,name ="generate_muster"),
+    path('my_profile/',views.myProfileView,name ="my_profile"),
 ]
