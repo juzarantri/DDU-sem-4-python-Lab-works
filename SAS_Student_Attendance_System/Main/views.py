@@ -146,6 +146,15 @@ def startAttendance(request):
             })
         else:
             cursor = connection.cursor()
+            # inserting date data for future reference if any student signup later
+            cursor.execute("CREATE TABLE IF NOT EXISTS attendancedate(tableName VARCHAR(30), date DATE);")
+            cursor.execute("SELECT * FROM attendancedate WHERE tableName ='"+tblname+"' AND date = '"+str(date.today())+"'")
+            if cursor.fetchall():
+                pass
+            else:
+                sql = "INSERT INTO attendancedate (tableName,date) VALUES(%s,%s);"
+                val = (tblname,date.today())
+                cursor.execute(sql,val)
             on_going_attendance = []
             cursor.execute("CREATE TABLE IF NOT EXISTS attendance_start_stop (branch VARCHAR(50), semester VARCHAR(50), subject VARCHAR(50), status INT, tableName VARCHAR(50), faculty VARCHAR(50), FOREIGN KEY (faculty) REFERENCES main_teacher(username));")
             cursor.execute("SELECT * FROM attendance_start_stop WHERE tableName = '"+tblname+"' AND faculty = '"+teacher+"';")
@@ -161,7 +170,7 @@ def startAttendance(request):
                     data = cursor.fetchall()
                     for d in data:
                         sql = "INSERT INTO "+tblname+" VALUES(%s,%s,%s,%s,%s,%s);"
-                        val = (d[1],d[0],d[5],0,date.today(),datetime.now())
+                        val = (d[1],d[0],d[6],0,date.today(),datetime.now())
                         cursor.execute(sql,val)
                 sql = "UPDATE attendance_start_stop SET status = 1 WHERE tableName = '"+tblname+"';"
                 cursor.execute(sql)
