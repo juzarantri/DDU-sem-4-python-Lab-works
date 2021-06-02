@@ -80,6 +80,15 @@ def registration_view(request):
                                             roll_no = roll_no,
                                             user = user)
                     newStudent.save()
+                    cursor.execute("CREATE TABLE IF NOT EXISTS attendancedate(tableName VARCHAR(30), date DATE);")
+                    cursor.execute("SELECT * FROM attendancedate")
+                    for temp in cursor.fetchall():
+                        tblname = branch+"_"+"sem"+str(sem)
+                        if temp[0][0:7].lower() == tblname.lower():
+                            temp_con = connection.cursor()
+                            sql = "INSERT INTO "+temp[0]+" VALUES(%s,%s,%s,%s,%s,%s);"
+                            val = (fullname,username,roll_no,0,temp[1],datetime.now())
+                            temp_con.execute(sql,val)
                     login(request,user)
                     return redirect('home')
         else:
@@ -155,6 +164,7 @@ def startAttendance(request):
                 sql = "INSERT INTO attendancedate (tableName,date) VALUES(%s,%s);"
                 val = (tblname,date.today())
                 cursor.execute(sql,val)
+
             on_going_attendance = []
             cursor.execute("CREATE TABLE IF NOT EXISTS attendance_start_stop (branch VARCHAR(50), semester VARCHAR(50), subject VARCHAR(50), status INT, tableName VARCHAR(50), faculty VARCHAR(50), FOREIGN KEY (faculty) REFERENCES main_teacher(username));")
             cursor.execute("SELECT * FROM attendance_start_stop WHERE tableName = '"+tblname+"' AND faculty = '"+teacher+"';")
@@ -560,20 +570,19 @@ def save_student_profile(request):
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM main_student WHERE username <> '"+request.user.username+"'")
         for temp in cursor.fetchall():
-            if temp[3] == phone_no:
+            if temp[2] == phone_no:
                 error.append("Phone number must be unique")
                 break
-            if temp[4] == parent_phone_no:
+            if temp[3] == parent_phone_no:
                 error.append("Phone number must be unique")
                 break
-            if temp[6] == student_id:
+            if temp[5] == student_id:
                 error.append("Student id must be unique")
                 break
-            if temp[7] == roll_no and temp[5] == branch:
+            if temp[6] == roll_no and temp[4] == branch:
                 error.append("Roll NO. must be unique")
                 break
         if error:   
-            temp = studentMyProfileView(request)
             return render(request,"home.html",{
                 'home_error': error  
             })
