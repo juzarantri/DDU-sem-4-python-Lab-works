@@ -11,70 +11,76 @@
                     {% endfor %}
                 {% endif %}
                 <form action= "{% url 'signup' %}" method="post">{% csrf_token %}
+                    <div class="alert alert-danger">
+                        <strong>Roll No</strong> is not allowed to be changed once assigned.
+                    </div>
+                    <div class="alert alert-danger">
+                        <strong>Fullname</strong> is not allowed to be changed once assigned.
+                    </div>
                     <div class="form-group row">
                         <label for="tag1" class="col-sm-5 col-form-label">Username:</label>
                         <div class="col-sm-15">
-                             <input id="tag1" type="text" class="form-control" name="uname" placeholder="i.e. lucifer" >
+                             <input id="tag1" type="text" class="form-control" name="uname" placeholder="i.e. lucifer" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="tag2" class="col-sm-5 col-form-label">Fullname:</label>
                         <div class="col-sm-15">
-                             <input id="tag2" type="text" class="form-control" name="fullname" placeholder="fullname">
+                             <input id="tag2" type="text" class="form-control" name="fullname" placeholder="fullname" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="tag3" class="col-sm-5 col-form-label">Email:</label>
                         <div class="col-sm-15">
-                             <input id="tag3" type="text" class="form-control" name="email" placeholder="abc@xyz.com">
+                             <input id="tag3" type="text" class="form-control" name="email" placeholder="abc@xyz.com" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="tag4" class="col-sm-5 col-form-label">Phone:</label>
                         <div class="col-sm-15">
-                             <input id="tag4" type="number" class="form-control" minlength="10" maxlength="13" name="phone_no" placeholder="i.e. +17896644133">
+                             <input id="tag4" type="number" class="form-control" minlength="10" maxlength="13" name="phone_no" placeholder="i.e. 9845264137" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="tag5" class="col-sm-5 col-form-label">Parent's Phone:</label>
                         <div class="col-sm-15">
-                             <input id="tag5" type="number" class="form-control" name="parent_phone_no" placeholder="i.e. +17896644133">
+                             <input id="tag5" type="number" class="form-control" name="parent_phone_no" placeholder="i.e. 9845264137" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="tag6" class="col-sm-5 col-form-label">Branch:</label>
                         <div class="col-sm-15">
-                             <input id="tag6" type="text" class="form-control" name="branch" minlength="2" maxlength="6" placeholder="i.e. ce">
+                             <input id="tag6" type="text" class="form-control" name="branch" minlength="2" placeholder="i.e. ce" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="tag6" class="col-sm-5 col-form-label">Current Semester:</label>
                         <div class="col-sm-15">
-                            <input id="tag6" type="number" class="form-control" name="sem" minlength="1" maxlength="1" placeholder="i.e.4">
+                            <input id="tag6" type="number" class="form-control" name="sem" minlength="1" maxlength="1" placeholder="i.e.4" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="tag7" class="col-sm-5 col-form-label">Student ID:</label>
                         <div class="col-sm-15">
-                             <input id="tag7" type="text" class="form-control" name="student_id" placeholder="20ceuod000">
+                             <input id="tag7" type="text" class="form-control" name="student_id" placeholder="20ceuod000" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="tag8" class="col-sm-5 col-form-label">Roll NO.:</label>
                         <div class="col-sm-15">
-                             <input id="tag8" type="text" class="form-control" name="roll_no" minlength="3" maxlength="3" placeholder="200">
+                             <input id="tag8" type="text" class="form-control" name="roll_no" minlength="3" maxlength="3" placeholder="200" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="tag9" class="col-sm-5 col-form-label">Password:</label>
                         <div class="col-sm-15">
-                             <input tag="9" type="password" class="form-control" name="pass1" placeholder="******">
+                             <input tag="9" type="password" class="form-control" name="pass1" placeholder="******" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="tag10" class="col-sm-5 col-form-label">Confirm Password:</label>
                         <div class="col-sm-15">
-                             <input id="tag10" type="password" class="form-control" name="pass2" placeholder="******">
+                             <input id="tag10" type="password" class="form-control" name="pass2" placeholder="******" required>
                         </div>
                     </div>
                     <div align = "center">
